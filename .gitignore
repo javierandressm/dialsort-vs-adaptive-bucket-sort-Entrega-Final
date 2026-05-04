@@ -1,0 +1,12 @@
+# Build outputs
+build/
+cmake-build-*/
+*.o
+*.obj
+*.exe
+sort_benchmark
+
+# Local editor and OS files
+.idea/
+.DS_Store
+Thumbs.db
