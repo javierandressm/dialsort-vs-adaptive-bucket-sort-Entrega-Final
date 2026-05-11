@@ -33,6 +33,12 @@ struct BenchmarkSummaryRow {
     bool allSorted = false;
 };
 
+struct ModeSummaryRow {
+    std::string algorithm;
+    double timeMs = 0.0;
+    bool sorted = false;
+};
+
 std::vector<Distribution> allDistributions() {
     return {Distribution::Uniform, Distribution::NearlySorted, Distribution::Repeated};
 }
@@ -292,6 +298,32 @@ void printBenchmarkSummary(const std::vector<BenchmarkSummaryRow>& summaryRows) 
     }
 }
 
+void printModeSummary(
+    const std::string& modeName,
+    std::size_t n,
+    int universe,
+    const std::string& distributionLabel,
+    const std::vector<ModeSummaryRow>& summaryRows
+) {
+    if (summaryRows.empty()) {
+        return;
+    }
+
+    std::cout << "\nResumen final (" << modeName << ")\n";
+    std::cout << "  Contexto | n=" << n << ", U=" << universe;
+    if (!distributionLabel.empty()) {
+        std::cout << ", dist=" << distributionLabel;
+    }
+    std::cout << '\n';
+
+    for (const ModeSummaryRow& row : summaryRows) {
+        std::cout << "  " << row.algorithm
+                  << " | time_ms=" << std::fixed << std::setprecision(3) << row.timeMs
+                  << ", sorted=" << (row.sorted ? "true" : "false")
+                  << '\n';
+    }
+}
+
 } // namespace
 
 Distribution parseDistribution(const std::string& name) {
@@ -337,23 +369,38 @@ void runDemo() {
     printVector(original);
 
     std::vector<int> dialData = original;
-    dialSort(dialData, universe);
+    const double dialMs = measureDialSort(dialData, universe);
     std::cout << "DialSort: ";
     printVector(dialData);
     std::cout << "Ordenado correctamente: " << (isSorted(dialData) ? "true" : "false") << '\n';
 
     std::vector<int> bucketData = original;
-    adaptiveRangeBucketSort(bucketData, 5);
+    const double bucketMs = measureBucketSort(bucketData, 5);
     std::cout << "Adaptive Range Bucket Sort: ";
     printVector(bucketData);
     std::cout << "Ordenado correctamente: " << (isSorted(bucketData) ? "true" : "false") << '\n';
 
     showDialVisualization(original, universe);
     showBucketVisualization(original, 5);
+
+    printModeSummary(
+        "demo",
+        original.size(),
+        universe,
+        "custom",
+        {
+            {"DialSort", dialMs, isSorted(dialData)},
+            {"AdaptiveRangeBucketSort", bucketMs, isSorted(bucketData)}
+        }
+    );
 }
 
 void runVisualization(std::size_t n, int universe, Distribution distribution, std::size_t bucketCount) {
     const std::vector<int> values = generateDataset(n, universe, distribution, 20260504ULL);
+    std::vector<int> dialData = values;
+    const double dialMs = measureDialSort(dialData, universe);
+    std::vector<int> bucketData = values;
+    const double bucketMs = measureBucketSort(bucketData, bucketCount);
 
     std::cout << "Visualizacion interna\n";
     std::cout << "n=" << n
@@ -364,6 +411,17 @@ void runVisualization(std::size_t n, int universe, Distribution distribution, st
 
     showDialVisualization(values, universe);
     showBucketVisualization(values, bucketCount);
+
+    printModeSummary(
+        "visualize",
+        n,
+        universe,
+        distributionName(distribution),
+        {
+            {"DialSort", dialMs, isSorted(dialData)},
+            {"AdaptiveRangeBucketSort", bucketMs, isSorted(bucketData)}
+        }
+    );
 }
 
 void runBenchmark(const BenchmarkConfig& config) {

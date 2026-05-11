@@ -159,7 +159,7 @@ En Windows (`.exe`):
 
 ## 📋 Salida Esperada
 
-El benchmark imprime por consola el avance de cada configuracion y guarda en CSV:
+Todos los modos imprimen un resumen final por consola. En `benchmark`, ademas se guarda CSV:
 
 ```text
 Configuracion: n=1000000, U=100000, dist=uniform, runs=5
@@ -169,6 +169,15 @@ Resumen final por configuracion
   DialSort | n=1000000, U=100000, dist=uniform, mean_ms=44.980, stddev_ms=0.800, throughput=22232189 reg/s, sorted=true
   AdaptiveRangeBucketSort | n=1000000, U=100000, dist=uniform, mean_ms=97.532, stddev_ms=1.105, throughput=10253009 reg/s, sorted=true
 Resultados guardados en results/benchmark_results.csv
+```
+
+Resumen al final de `demo` y `visualize`:
+
+```text
+Resumen final (demo)
+  Contexto | n=15, U=20, dist=custom
+  DialSort | time_ms=0.010, sorted=true
+  AdaptiveRangeBucketSort | time_ms=0.020, sorted=true
 ```
 
 ## 📄 CSV de Resultados
@@ -199,7 +208,7 @@ El modo `visualize` muestra el comportamiento interno de ambos algoritmos:
 
 ## ✅ Verificacion
 
-El programa verifica automaticamente que cada algoritmo produzca un ordenamiento valido usando `std::is_sorted`. El resultado aparece en la columna `is_sorted` del CSV y en la salida del modo `demo`.
+El programa verifica automaticamente que cada algoritmo produzca un ordenamiento valido usando `std::is_sorted`. El resultado aparece en la columna `is_sorted` del CSV y en el resumen final de todos los modos.
 
 ## 📌 Notas Importantes
 
