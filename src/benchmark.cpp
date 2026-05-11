@@ -22,6 +22,17 @@ struct RunResult {
     bool sorted = false;
 };
 
+struct BenchmarkSummaryRow {
+    std::string algorithm;
+    std::size_t n = 0;
+    int universe = 0;
+    Distribution distribution = Distribution::Uniform;
+    double meanMs = 0.0;
+    double stddevMs = 0.0;
+    double throughput = 0.0;
+    bool allSorted = false;
+};
+
 std::vector<Distribution> allDistributions() {
     return {Distribution::Uniform, Distribution::NearlySorted, Distribution::Repeated};
 }
@@ -239,6 +250,48 @@ void writeCsvRows(
     }
 }
 
+BenchmarkSummaryRow buildSummaryRow(
+    const std::string& algorithm,
+    std::size_t n,
+    int universe,
+    Distribution distribution,
+    const std::vector<RunResult>& results
+) {
+    std::vector<double> times;
+    times.reserve(results.size());
+    bool allSorted = true;
+    for (const RunResult& result : results) {
+        times.push_back(result.timeMs);
+        allSorted = allSorted && result.sorted;
+    }
+
+    const double meanMs = mean(times);
+    const double stddevMs = standardDeviation(times, meanMs);
+    const double throughput = meanMs > 0.0 ? static_cast<double>(n) / (meanMs / 1000.0) : 0.0;
+
+    return {algorithm, n, universe, distribution, meanMs, stddevMs, throughput, allSorted};
+}
+
+void printBenchmarkSummary(const std::vector<BenchmarkSummaryRow>& summaryRows) {
+    if (summaryRows.empty()) {
+        return;
+    }
+
+    std::cout << "\nResumen final por configuracion\n";
+    for (const BenchmarkSummaryRow& row : summaryRows) {
+        std::cout << "  " << row.algorithm
+                  << " | n=" << row.n
+                  << ", U=" << row.universe
+                  << ", dist=" << distributionName(row.distribution)
+                  << ", mean_ms=" << std::fixed << std::setprecision(3) << row.meanMs
+                  << ", stddev_ms=" << row.stddevMs
+                  << ", throughput=" << std::setprecision(0) << row.throughput
+                  << " reg/s"
+                  << ", sorted=" << (row.allSorted ? "true" : "false")
+                  << '\n';
+    }
+}
+
 } // namespace
 
 Distribution parseDistribution(const std::string& name) {
@@ -329,6 +382,7 @@ void runBenchmark(const BenchmarkConfig& config) {
     }
 
     csv << "algorithm,n,U,distribution,run,time_ms,mean_ms,stddev_ms,throughput_records_sec,is_sorted\n";
+    std::vector<BenchmarkSummaryRow> summaryRows;
 
     for (std::size_t n : config.nValues) {
         for (int universe : config.universeValues) {
@@ -364,9 +418,12 @@ void runBenchmark(const BenchmarkConfig& config) {
 
                 writeCsvRows(csv, "DialSort", n, universe, distribution, dialResults);
                 writeCsvRows(csv, "AdaptiveRangeBucketSort", n, universe, distribution, bucketResults);
+                summaryRows.push_back(buildSummaryRow("DialSort", n, universe, distribution, dialResults));
+                summaryRows.push_back(buildSummaryRow("AdaptiveRangeBucketSort", n, universe, distribution, bucketResults));
             }
         }
     }
 
+    printBenchmarkSummary(summaryRows);
     std::cout << "Resultados guardados en " << config.outputCsvPath << '\n';
 }

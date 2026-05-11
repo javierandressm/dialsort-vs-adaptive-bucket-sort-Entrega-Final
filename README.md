@@ -165,6 +165,9 @@ El benchmark imprime por consola el avance de cada configuracion y guarda en CSV
 Configuracion: n=1000000, U=100000, dist=uniform, runs=5
   Run 1: DialSort=45.123 ms, AdaptiveRangeBucketSort=98.456 ms
   ...
+Resumen final por configuracion
+  DialSort | n=1000000, U=100000, dist=uniform, mean_ms=44.980, stddev_ms=0.800, throughput=22232189 reg/s, sorted=true
+  AdaptiveRangeBucketSort | n=1000000, U=100000, dist=uniform, mean_ms=97.532, stddev_ms=1.105, throughput=10253009 reg/s, sorted=true
 Resultados guardados en results/benchmark_results.csv
 ```
 
