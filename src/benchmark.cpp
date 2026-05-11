@@ -310,7 +310,7 @@ void printModeSummary(
     }
 
     std::cout << "\nResumen final (" << modeName << ")\n";
-    std::cout << "  Contexto | n=" << n << ", U=" << universe;
+    std::cout << "  Peso/tamano del caso | n=" << n << " elementos, U=" << universe;
     if (!distributionLabel.empty()) {
         std::cout << ", dist=" << distributionLabel;
     }
@@ -322,6 +322,34 @@ void printModeSummary(
                   << ", sorted=" << (row.sorted ? "true" : "false")
                   << '\n';
     }
+
+    std::size_t fastestIndex = 0;
+    for (std::size_t i = 1; i < summaryRows.size(); ++i) {
+        if (summaryRows[i].timeMs < summaryRows[fastestIndex].timeMs) {
+            fastestIndex = i;
+        }
+    }
+
+    std::cout << "  Mas eficiente: " << summaryRows[fastestIndex].algorithm
+              << " (" << std::fixed << std::setprecision(3) << summaryRows[fastestIndex].timeMs << " ms)";
+
+    if (summaryRows.size() > 1) {
+        std::size_t secondIndex = fastestIndex == 0 ? 1 : 0;
+        for (std::size_t i = 0; i < summaryRows.size(); ++i) {
+            if (i == fastestIndex) {
+                continue;
+            }
+            if (summaryRows[i].timeMs < summaryRows[secondIndex].timeMs) {
+                secondIndex = i;
+            }
+        }
+
+        std::cout << "; diferencia vs. " << summaryRows[secondIndex].algorithm
+                  << ": " << std::fixed << std::setprecision(3)
+                  << (summaryRows[secondIndex].timeMs - summaryRows[fastestIndex].timeMs) << " ms";
+    }
+
+    std::cout << '\n';
 }
 
 } // namespace

@@ -175,9 +175,10 @@ Resumen al final de `demo` y `visualize`:
 
 ```text
 Resumen final (demo)
-  Contexto | n=15, U=20, dist=custom
+  Peso/tamano del caso | n=15 elementos, U=20, dist=custom
   DialSort | time_ms=0.010, sorted=true
   AdaptiveRangeBucketSort | time_ms=0.020, sorted=true
+  Mas eficiente: DialSort (0.010 ms); diferencia vs. AdaptiveRangeBucketSort: 0.010 ms
 ```
 
 ## 📄 CSV de Resultados
